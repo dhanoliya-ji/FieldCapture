@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0.0",
+  "jobId": "example-schema-01",
+  "createdAtIso": "2026-11-25T10:00:00Z",
+  "updatedAtIso": "2026-11-25T10:04:12Z",
+  "status": "DRAFT",
+  "sessionTelemetry": {
+    "sdkVersion": "mwdat-1.1.0",
+    "deviceMode": "MOCK_DEVICE_KIT",
+    "audioSource": "PHONE_MIC_FALLBACK",
+    "audioFallbackReason": "No Bluetooth SCO/HFP glasses mic in AudioManager (MockDeviceKit simulates video/lifecycle only); using phone mic.",
+    "disconnectCount": 1,
+    "recoveryCount": 1,
+    "retakeCount": 1
+  },
+  "captures": [],
+  "notes": [],
+  "lineItems": [],
+  "estimatedSubtotalUsd": 0.0,
+  "pendingUploadCount": 0
+}
