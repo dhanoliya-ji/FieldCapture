@@ -61,14 +61,15 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        androidPermissionLauncher.launch(
-            arrayOf(
-                Manifest.permission.BLUETOOTH,
-                Manifest.permission.BLUETOOTH_CONNECT,
-                Manifest.permission.INTERNET,
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.CAMERA,
-            ),
-        )
+        val perms = buildList {
+            add(Manifest.permission.BLUETOOTH)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                add(Manifest.permission.BLUETOOTH_CONNECT)
+            }
+            add(Manifest.permission.INTERNET)
+            add(Manifest.permission.RECORD_AUDIO)
+            add(Manifest.permission.CAMERA)
+        }.toTypedArray()
+        androidPermissionLauncher.launch(perms)
     }
 }

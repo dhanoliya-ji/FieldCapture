@@ -26,7 +26,7 @@ android {
 
     defaultConfig {
         applicationId = "com.fieldcapture.app"
-        minSdk = 31
+        minSdk = 30
         targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
