@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FieldCapture</string>
+    <string name="notification_channel_name">FieldCapture Glasses Stream</string>
+    <string name="notification_channel_description">Keeps Meta glasses camera stream active during walkthrough</string>
+    <string name="notification_title">FieldCapture Active</string>
+    <string name="notification_body">Hands-free inspection session in progress</string>
+</resources>
