@@ -67,7 +67,13 @@ fun FieldCaptureAppRoot(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
                     icon = {},
-                    label = { Text("Job Record (${state.jobRecord.captures.size})") },
+                    label = { Text("Job (${state.jobRecord.captures.size})") },
+                )
+                NavigationBarItem(
+                    selected = selectedTab == 2,
+                    onClick = { selectedTab = 2 },
+                    icon = {},
+                    label = { Text("Eval") },
                 )
             }
         },
@@ -87,6 +93,7 @@ fun FieldCaptureAppRoot(
                     onNewJob = viewModel::startNewJob,
                     onTapeComparison = viewModel::updateTapeMeasureComparison,
                 )
+                2 -> EvalScreen()
             }
         }
     }
