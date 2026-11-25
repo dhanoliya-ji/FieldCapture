@@ -79,6 +79,13 @@ flowchart LR
 - **Damage**: Voice-command `room` & `surface` + visual color/texture classification + **Stretch Goal: Monocular Size Estimation** (`MonocularSizeEstimator`) with tape-measure comparison in the Job Record tab.
 - **Line Items**: `LineItemCatalog` defines 14 custom codes (`DRW-01`, `DRW-02`, `PNT-01`, `INS-01`, `FLR-01`, `CAB-01`, `BSB-01`, `WTR-01`, `MLD-01`, `PLM-01`, `PLM-02`, `PLM-03`, `CLG-01`, `TST-01`).
 
+## Model Selection & Cost per Job
+- **Default (100% Free & Offline)**:
+  - **Vision / OCR**: Google ML Kit Text Recognition (`com.google.mlkit:text-recognition:16.0.1`) + deterministic `NameplateParser` and `DamageAnalyzer` color/texture + `MonocularSizeEstimator`. **Cost: \$0.00 / job** (runs entirely on-device).
+  - **Speech**: Android `SpeechRecognizer` (device/OS speech engine) + `VoiceCommandParser` + Android `TextToSpeech`. **Cost: \$0.00 / job**.
+- **Optional Cloud Vision Enhancement**:
+  - **Gemini 2.5 Flash** (`GeminiVisionClient`, enabled only if `gemini_api_key` is set in `local.properties`): chosen for low latency and strong structured JSON extraction on degraded/angled nameplates. Free tier on Google AI Studio costs **\$0.00 / job**; on paid API pricing, ~8 captures/job at ~1,500 input + 250 output tokens each is **< \$0.005 / job**.
+
 ## Known Limitations & Manual Steps Required
 - **40+ Real-Frame Evaluation & Demo Video**: Real-world photos/videos must be captured on your own device in your own space (this repository includes the `EvaluationEngine` harness and unit tests, without fabricated real-world accuracy numbers).
 - **Monocular Size Accuracy**: Without a reference object (`pixelsPerInchOverride`), `FOV_DISTANCE_PRIOR` assumes a 1.2 m standoff distance and 82° HFOV; tilted angles or closer/farther standoffs introduce proportional scale error.
