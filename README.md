@@ -86,6 +86,12 @@ flowchart LR
 - **Optional Cloud Vision Enhancement**:
   - **Gemini 2.5 Flash** (`GeminiVisionClient`, enabled only if `gemini_api_key` is set in `local.properties`): chosen for low latency and strong structured JSON extraction on degraded/angled nameplates. Free tier on Google AI Studio costs **\$0.00 / job**; on paid API pricing, ~8 captures/job at ~1,500 input + 250 output tokens each is **< \$0.005 / job**.
 
+## Product Judgment: What We Cut & Why (Gloves in an Attic, No Signal)
+Designed for a technician wearing work gloves in a dark, offline attic/crawlspace:
+- **Cut manual photo cropping & bounding-box drawing**: A gloved tech cannot pinch-zoom or draw rectangles on a phone screen. Instead, `MonocularSizeEstimator` segments the damage region automatically and only offers optional post-walkthrough tape-measure comparison in the back-office Job tab.
+- **Cut mandatory cloud login & cloud-only vision**: Attics and basements have zero signal. We chose on-device ML Kit OCR + deterministic parsers + SQLite/WorkManager queuing so captures, quality checks, and draft line items work 100% offline with zero lost frames.
+- **Cut multi-step confirmation dialogs**: Quality failures speak a concise TTS prompt (*"Too dark. Add light or step closer and retake."*) so the tech never has to pull out their phone, while keeping a single large **Keep Anyway** button for edge cases where a retake isn't physically possible.
+
 ## Known Limitations & Manual Steps Required
 - **40+ Real-Frame Evaluation & Demo Video**: Real-world photos/videos must be captured on your own device in your own space (this repository includes the `EvaluationEngine` harness and unit tests, without fabricated real-world accuracy numbers).
 - **Monocular Size Accuracy**: Without a reference object (`pixelsPerInchOverride`), `FOV_DISTANCE_PRIOR` assumes a 1.2 m standoff distance and 82° HFOV; tilted angles or closer/farther standoffs introduce proportional scale error.

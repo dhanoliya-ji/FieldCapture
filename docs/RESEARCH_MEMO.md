@@ -14,6 +14,15 @@ Inspecting the official `meta/meta-wearables-dat-android` SDK (`mwdat-core:1.1.0
 3. **HEVC NAL Unit Priming & Blocked Hardware Decoders**: When `compressVideo = true`, `VideoFrame` delivers raw H.265 NAL units. Previewing on a `SurfaceView` requires caching VPS/SPS/PPS config NALs (types 32/33/34) until the first IRAP keyframe, and avoiding known broken vendor decoders (`OMX.Exynos.hevc.dec`, `c2.mtk.hevc.decoder`).
 4. **EXIF Orientation on HEIC Stills**: `PhotoData.HEIC` stores rotation in EXIF tags that Android's `BitmapFactory.decodeByteArray` ignores, so `ExifInterface` rotation is required before running quality checks or OCR.
 
-## 3. First Hardware Change We Would Make
+## 3. What MockDeviceKit Cannot Simulate (What Changes on Real Glasses)
+| Area | MockDeviceKit Behavior | Real Ray-Ban Meta Glasses |
+|---|---|---|
+| **Microphone / Voice** | No virtual BT SCO/HFP device in `AudioManager`; falls back to phone mic | Audio routes over BT HFP/SCO (8–16 kHz narrowband/wideband), which degrades ASR in noisy mechanical rooms |
+| **Thermal & Battery** | Runs indefinitely on phone power | Continuous 24fps HEVC streaming heats the temple and drains battery (~30–45 min continuous stream); must pause stream between rooms |
+| **RF / Disconnects** | Instant `powerOff()` / `fold()` toggle | Gradual RSSI drop, packet loss, and stalled frames behind ductwork/concrete before `DeviceSessionState.STOPPED` fires |
+| **App Attestation** | `mwdat_application_id=0` works in mock/dev mode | Production requires registered Meta Wearables Developer Center `APPLICATION_ID`, `CLIENT_TOKEN`, and Meta AI companion app approval |
+| **Optics & Exposure** | Phone camera sensor/AF or static video/image | Fixed-focus wide-angle lens (close-up nameplates < 15 cm can defocus) with slower AE adaptation when stepping into dark cupboards |
+
+## 4. First Hardware Change We Would Make
 **Add a narrow-beam, voice-togglable LED work light (≥ 150 lumens) paired with a single-point Time-of-Flight (ToF) laser rangefinder (e.g., VL53L4CD) aligned with the camera optical axis.**
 - **Why**: The #1 failure mode in mechanical/plumbing/under-sink inspection is low light (`< 48` luminance) causing both motion blur (long exposure) and unreadable nameplates. A co-aligned ToF sensor solves the #2 failure mode—monocular scale ambiguity—by giving exact standoff distance $D$ at the center reticle so $\text{width} = 2 D \tan(\text{HFOV}/2) \cdot (\Delta x / W)$ becomes accurate without any tape measure or reference card.
