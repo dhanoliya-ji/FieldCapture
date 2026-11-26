@@ -1,8 +1,7 @@
 package com.fieldcapture.app.ui
 
 import android.app.Activity
-import android.view.SurfaceHolder
-import android.view.SurfaceView
+import androidx.compose.foundation.AndroidEmbeddedExternalSurface
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,7 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import com.fieldcapture.app.dat.WalkSessionLifecycle
 import com.meta.wearable.dat.core.types.Permission
 import com.meta.wearable.dat.core.types.PermissionStatus
@@ -168,7 +166,7 @@ private fun WalkthroughTab(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
         )
 
-        // Live preview surface
+        // Live preview surface (TextureView-backed so it renders cleanly inside scrollable Compose on Android 11)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -176,19 +174,14 @@ private fun WalkthroughTab(
                 .background(Color.Black, RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center,
         ) {
-            AndroidView(
+            AndroidEmbeddedExternalSurface(
                 modifier = Modifier.fillMaxSize(),
-                factory = { ctx ->
-                    SurfaceView(ctx).apply {
-                        holder.addCallback(object : SurfaceHolder.Callback {
-                            override fun surfaceCreated(holder: SurfaceHolder) {
-                                viewModel.setPreviewSurface(holder.surface)
-                            }
-                            override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {}
-                            override fun surfaceDestroyed(holder: SurfaceHolder) {
-                                viewModel.setPreviewSurface(null)
-                            }
-                        })
+                onInit = {
+                    onSurface { surface, _, _ ->
+                        viewModel.setPreviewSurface(surface)
+                        surface.onDestroyed {
+                            viewModel.setPreviewSurface(null)
+                        }
                     }
                 },
             )
