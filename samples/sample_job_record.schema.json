@@ -1,8 +1,8 @@
 {
   "schemaVersion": "1.0.0",
-  "jobId": "example-schema-01",
-  "createdAtIso": "2026-11-25T10:00:00Z",
-  "updatedAtIso": "2026-11-25T10:04:12Z",
+  "jobId": "schema-example-01",
+  "createdAtIso": "2026-11-26T09:30:00Z",
+  "updatedAtIso": "2026-11-26T09:34:15Z",
   "status": "DRAFT",
   "sessionTelemetry": {
     "sdkVersion": "mwdat-1.1.0",
@@ -13,9 +13,112 @@
     "recoveryCount": 1,
     "retakeCount": 1
   },
-  "captures": [],
-  "notes": [],
-  "lineItems": [],
-  "estimatedSubtotalUsd": 0.0,
+  "captures": [
+    {
+      "id": "cap-np-01",
+      "captureType": "NAMEPLATE",
+      "timestampIso": "2026-11-26T09:31:00Z",
+      "imagePath": "/data/user/0/com.fieldcapture.app/files/captures/cap_np01.jpg",
+      "qualityMetrics": {
+        "passed": true,
+        "blurScore": 312.4,
+        "meanLuminance": 128.5,
+        "darkPixelRatio": 0.04,
+        "brightPixelRatio": 0.01,
+        "borderEdgeRatio": 0.14,
+        "centerContrastRatio": 0.72,
+        "failureReason": "NONE",
+        "retakePrompt": null
+      },
+      "nameplateData": {
+        "make": { "value": "Rheem", "confidence": 0.81, "source": "ocr+brand_dict" },
+        "model": { "value": "PROG50-38N", "confidence": 0.79, "source": "ocr+label_regex" },
+        "serialNumber": { "value": "Q421912345", "confidence": 0.78, "source": "ocr+label_regex" },
+        "manufactureDate": { "value": "2019-10", "confidence": 0.77, "source": "ocr+label_regex" },
+        "rawOcrText": "RHEEM\nModel No: PROG50-38N\nS/N: Q421912345\nMfg Date: 10/2019"
+      },
+      "damageData": null,
+      "uploadStatus": "SYNCED",
+      "retryCount": 0,
+      "forceAccepted": false
+    },
+    {
+      "id": "cap-dmg-01",
+      "captureType": "DAMAGE",
+      "timestampIso": "2026-11-26T09:32:10Z",
+      "imagePath": "/data/user/0/com.fieldcapture.app/files/captures/cap_dmg01.jpg",
+      "qualityMetrics": {
+        "passed": true,
+        "blurScore": 245.1,
+        "meanLuminance": 115.2,
+        "darkPixelRatio": 0.08,
+        "brightPixelRatio": 0.02,
+        "borderEdgeRatio": 0.18,
+        "centerContrastRatio": 0.61,
+        "failureReason": "NONE",
+        "retakePrompt": null
+      },
+      "nameplateData": null,
+      "damageData": {
+        "room": { "value": "kitchen", "confidence": 0.92, "source": "voice_command" },
+        "surface": { "value": "north wall", "confidence": 0.9, "source": "voice_command" },
+        "damageType": { "value": "water_stain_discoloration", "confidence": 0.78, "source": "on_device_color_texture" },
+        "roughSize": { "value": "24.0\" x 18.0\" (~3.0 sq ft)", "confidence": 0.58, "source": "FOV_DISTANCE_PRIOR" },
+        "sizeEstimate": {
+          "widthInches": 24.0,
+          "heightInches": 18.0,
+          "areaSqFt": 3.0,
+          "method": "FOV_DISTANCE_PRIOR",
+          "confidence": 0.58,
+          "referenceUsed": "82 deg HFOV @ 47 in",
+          "tapeWidthInches": null,
+          "tapeHeightInches": null
+        },
+        "summary": "water_stain_discoloration on north wall in kitchen (24.0\" x 18.0\" (~3.0 sq ft))"
+      },
+      "uploadStatus": "SYNCED",
+      "retryCount": 0,
+      "forceAccepted": false
+    }
+  ],
+  "notes": [
+    {
+      "id": "note-01",
+      "timestampIso": "2026-11-26T09:33:05Z",
+      "rawText": "subfloor soft by the cabinet",
+      "location": { "value": "by the cabinet", "confidence": 0.84, "source": "preposition_phrase" },
+      "component": { "value": "subfloor", "confidence": 0.9, "source": "component_dict" },
+      "condition": { "value": "soft", "confidence": 0.88, "source": "condition_dict" },
+      "severity": { "value": "HIGH", "confidence": 0.88, "source": "keyword_severity" },
+      "actionHint": { "value": "Probe moisture & framing; likely remove/replace subfloor", "confidence": 0.78, "source": "rule_engine" }
+    }
+  ],
+  "lineItems": [
+    {
+      "code": "PLM-01",
+      "category": "Plumbing",
+      "description": "Water heater inspection, pan, and T&P relief check",
+      "unit": "each",
+      "quantity": 1.0,
+      "unitRateUsd": 220.0,
+      "estimatedTotalUsd": 220.0,
+      "confidence": 0.8,
+      "rationale": "Appliance nameplate captured (Rheem PROG50-38N)",
+      "sourceIds": ["cap-np-01"]
+    },
+    {
+      "code": "FLR-01",
+      "category": "Flooring",
+      "description": "Remove and replace water-damaged subfloor",
+      "unit": "sq ft",
+      "quantity": 12.0,
+      "unitRateUsd": 9.75,
+      "estimatedTotalUsd": 117.0,
+      "confidence": 0.88,
+      "rationale": "Voice note: 'subfloor soft by the cabinet'",
+      "sourceIds": ["note-01"]
+    }
+  ],
+  "estimatedSubtotalUsd": 337.0,
   "pendingUploadCount": 0
 }
