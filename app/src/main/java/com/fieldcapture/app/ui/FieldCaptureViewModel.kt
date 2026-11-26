@@ -5,7 +5,6 @@ import android.app.Application
 import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
-import android.view.Surface
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.fieldcapture.app.data.lineitems.LineItemMapper
@@ -105,6 +104,7 @@ class FieldCaptureViewModel(application: Application) : AndroidViewModel(applica
         ),
     )
     val uiState: StateFlow<FieldCaptureUiState> = _uiState.asStateFlow()
+    val previewBitmap: StateFlow<Bitmap?> = datManager.previewBitmap
 
     init {
         connectivityMonitor.start()
@@ -115,6 +115,7 @@ class FieldCaptureViewModel(application: Application) : AndroidViewModel(applica
                 _uiState.update { state ->
                     state.copy(
                         dat = dat,
+                        statusBanner = dat.lastError ?: state.statusBanner,
                         jobRecord = state.jobRecord.copy(
                             sessionTelemetry = state.jobRecord.sessionTelemetry.copy(
                                 disconnectCount = dat.disconnectCount,
@@ -165,11 +166,17 @@ class FieldCaptureViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
-    fun setPreviewSurface(surface: Surface?) = datManager.setPreviewSurface(surface)
-
     fun startRegistration(activity: Activity) = datManager.startRegistration(activity)
 
     fun startWalkthroughSession(requestWearablePerm: suspend (Permission) -> PermissionStatus) {
+        if (!_uiState.value.mock.isEnabled && !_uiState.value.dat.hasActiveDevice) {
+            quickStartMockGlasses()
+            viewModelScope.launch {
+                kotlinx.coroutines.delay(500)
+                datManager.startSession(requestWearablePerm)
+            }
+            return
+        }
         datManager.startSession(requestWearablePerm)
     }
 

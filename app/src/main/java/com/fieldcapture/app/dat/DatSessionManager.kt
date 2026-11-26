@@ -4,9 +4,11 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.ImageFormat
 import android.graphics.Matrix
+import android.graphics.Rect
+import android.graphics.YuvImage
 import android.util.Log
-import android.view.Surface
 import androidx.exifinterface.media.ExifInterface
 import com.meta.wearable.dat.camera.Camera
 import com.meta.wearable.dat.camera.Stream
@@ -25,6 +27,7 @@ import com.meta.wearable.dat.core.types.Permission
 import com.meta.wearable.dat.core.types.PermissionStatus
 import com.meta.wearable.dat.core.types.RegistrationState
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -80,6 +83,9 @@ class DatSessionManager(
     private val _uiState = MutableStateFlow(DatSessionUiState())
     val uiState: StateFlow<DatSessionUiState> = _uiState.asStateFlow()
 
+    private val _previewBitmap = MutableStateFlow<Bitmap?>(null)
+    val previewBitmap: StateFlow<Bitmap?> = _previewBitmap.asStateFlow()
+
     private var session: DeviceSession? = null
     private var camera: Camera? = null
     private var stream: Stream? = null
@@ -94,10 +100,6 @@ class DatSessionManager(
     private var videoJob: Job? = null
     private var recoveryJob: Job? = null
     private var monitoringStarted = false
-
-    private val decoderLock = Any()
-    @Volatile private var hevcDecoder: HevcFrameDecoder? = null
-    @Volatile private var previewSurface: Surface? = null
 
     fun startMonitoring() {
         if (monitoringStarted) return
@@ -126,16 +128,6 @@ class DatSessionManager(
 
     fun startRegistration(activity: Activity) {
         Wearables.startRegistration(activity)
-    }
-
-    fun setPreviewSurface(surface: Surface?) {
-        synchronized(decoderLock) {
-            previewSurface = surface
-            if (surface == null) {
-                hevcDecoder?.stop()
-                hevcDecoder = null
-            }
-        }
     }
 
     fun startSession(requestCameraPermission: suspend (Permission) -> PermissionStatus) {
@@ -231,9 +223,15 @@ class DatSessionManager(
         }
 
         return if (decoded != null) {
-            Result.success(decoded!!)
+            Result.success(decoded)
         } else {
-            Result.failure(IllegalStateException(failureMsg ?: "Unknown capture error"))
+            val fallback = _previewBitmap.value
+            if (fallback != null) {
+                Log.w(TAG, "capturePhoto() failed ($failureMsg); using latest live preview frame")
+                Result.success(fallback.copy(Bitmap.Config.ARGB_8888, false))
+            } else {
+                Result.failure(IllegalStateException(failureMsg ?: "Unknown capture error"))
+            }
         }
     }
 
@@ -300,7 +298,7 @@ class DatSessionManager(
             StreamConfiguration(
                 videoQuality = VideoQuality.MEDIUM,
                 frameRate = FRAME_RATE,
-                compressVideo = true,
+                compressVideo = false,
             ),
         ).fold(
             onSuccess = { addedCamera ->
@@ -360,25 +358,44 @@ class DatSessionManager(
     }
 
     private fun handleVideoFrame(videoFrame: VideoFrame) {
-        if (!videoFrame.isCompressed) return
+        if (videoFrame.isCompressed) return
+        val width = videoFrame.width
+        val height = videoFrame.height
+        if (width <= 0 || height <= 0) return
+
         val buffer = videoFrame.buffer
-        val bytes = ByteArray(buffer.remaining())
+        val dataSize = buffer.remaining()
+        val expectedI420Size = width * height * 3 / 2
+        if (dataSize < expectedI420Size) return
+
+        val raw = ByteArray(dataSize)
         val pos = buffer.position()
-        buffer.get(bytes)
+        buffer.get(raw)
         buffer.position(pos)
 
-        synchronized(decoderLock) {
-            val surface = previewSurface
-            if (hevcDecoder == null && surface != null) {
-                hevcDecoder = HevcFrameDecoder().apply {
-                    start(videoFrame.width, videoFrame.height, surface)
-                }
-            }
-            hevcDecoder?.decodeFrame(bytes, videoFrame.presentationTimeUs)
+        // Convert I420 (Y + U + V) to NV21 (Y + VU) for YuvImage -> Bitmap
+        val frameSize = width * height
+        val qFrameSize = frameSize / 4
+        val nv21 = ByteArray(expectedI420Size)
+        System.arraycopy(raw, 0, nv21, 0, frameSize)
+        val uOffset = frameSize
+        val vOffset = frameSize + qFrameSize
+        var outIdx = frameSize
+        for (i in 0 until qFrameSize) {
+            nv21[outIdx++] = raw[vOffset + i]
+            nv21[outIdx++] = raw[uOffset + i]
         }
 
-        if (!videoFrame.isCodecConfig && !_uiState.value.hasReceivedFirstFrame) {
-            _uiState.update { it.copy(hasReceivedFirstFrame = true) }
+        val yuv = YuvImage(nv21, ImageFormat.NV21, width, height, null)
+        val baos = ByteArrayOutputStream()
+        yuv.compressToJpeg(Rect(0, 0, width, height), 80, baos)
+        val jpegBytes = baos.toByteArray()
+        val bmp = BitmapFactory.decodeByteArray(jpegBytes, 0, jpegBytes.size)
+        if (bmp != null) {
+            _previewBitmap.value = bmp
+            if (!_uiState.value.hasReceivedFirstFrame) {
+                _uiState.update { it.copy(hasReceivedFirstFrame = true) }
+            }
         }
     }
 
@@ -425,14 +442,11 @@ class DatSessionManager(
         streamStateJob = null
         streamErrorJob?.cancel()
         streamErrorJob = null
-        synchronized(decoderLock) {
-            hevcDecoder?.stop()
-            hevcDecoder = null
-        }
         StreamingService.stop(context)
         runCatching { camera?.close() }
         camera = null
         stream = null
+        _previewBitmap.value = null
         _uiState.update { it.copy(hasReceivedFirstFrame = false) }
     }
 

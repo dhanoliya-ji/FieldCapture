@@ -1,7 +1,7 @@
 package com.fieldcapture.app.ui
 
 import android.app.Activity
-import androidx.compose.foundation.AndroidEmbeddedExternalSurface
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +36,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.fieldcapture.app.dat.WalkSessionLifecycle
@@ -124,6 +126,7 @@ private fun WalkthroughTab(
     onRequestWearablePermission: suspend (Permission) -> PermissionStatus,
 ) {
     val activity = LocalContext.current as? Activity
+    val previewBmp by viewModel.previewBitmap.collectAsState()
     var commandText by remember { mutableStateOf("") }
 
     Column(
@@ -166,7 +169,7 @@ private fun WalkthroughTab(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
         )
 
-        // Live preview surface (TextureView-backed so it renders cleanly inside scrollable Compose on Android 11)
+        // Live preview rendered directly as ImageBitmap from uncompressed DAT VideoFrames
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -174,23 +177,21 @@ private fun WalkthroughTab(
                 .background(Color.Black, RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center,
         ) {
-            AndroidEmbeddedExternalSurface(
-                modifier = Modifier.fillMaxSize(),
-                onInit = {
-                    onSurface { surface, _, _ ->
-                        viewModel.setPreviewSurface(surface)
-                        surface.onDestroyed {
-                            viewModel.setPreviewSurface(null)
-                        }
-                    }
-                },
-            )
-            if (!state.dat.hasReceivedFirstFrame) {
+            val bmp = previewBmp
+            if (bmp != null) {
+                Image(
+                    bitmap = bmp.asImageBitmap(),
+                    contentDescription = "Live Glasses Camera Preview",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                )
+            } else {
                 Text(
                     when (state.dat.lifecycle) {
                         WalkSessionLifecycle.RECOVERING -> "Device disconnected — recovering session..."
                         WalkSessionLifecycle.PAUSED -> "Session paused"
-                        else -> "Tap 'Mock Glasses' -> 1-Tap Setup, then 'Start Session'"
+                        WalkSessionLifecycle.STARTING -> "Starting camera stream..."
+                        else -> "Tap 'Start' to auto-pair Mock Glasses & stream"
                     },
                     color = Color.White.copy(alpha = 0.85f),
                     style = MaterialTheme.typography.bodySmall,
