@@ -102,5 +102,10 @@ Designed for a technician wearing work gloves in a dark, offline attic/crawlspac
 2. **On-Device Whisper.cpp / Porcupine Wake-Word**: Replace Android `SpeechRecognizer` (which beeps and times out in noisy crawlspaces) with an always-on offline wake-word + local Whisper tiny/base model.
 3. **Glasses-First Audio Confirmation**: Add short earcon chimes + terse 2-word TTS confirmations tuned for noisy job sites.
 
+## Documentation Index
+- [Research Memo (Meta Glasses & DAT 1.1.0)](docs/RESEARCH_MEMO.md)
+- [Engineering Challenges & Solutions](docs/CHALLENGES_AND_SOLUTIONS.md)
+- [Evaluation Report](docs/EVAL_REPORT.md)
+
 ## AI Tools Used
 - **Antigravity (Gemini)**: Used for inspecting the official `meta/meta-wearables-dat-android` repository, scaffolding the Kotlin/Compose architecture, implementing the DAT 1.1.0 session manager, quality analyzer, extractors, and unit tests, and verifying compilation via Gradle.
