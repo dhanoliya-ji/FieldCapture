@@ -210,10 +210,18 @@ class MockGlassesController(context: Context) {
     }
 
     fun simulateTap() {
-        mockGlasses?.services?.captouch?.tap()
+        val glasses = mockGlasses ?: return
+        runCatching {
+            glasses.services.captouch.tap()
+            _state.update { it.copy(lastStatusMessage = "Simulated CapTouch Tap (Pause/Resume)") }
+        }
     }
 
     fun simulateTapAndHold() {
-        mockGlasses?.services?.captouch?.tapAndHold()
+        val glasses = mockGlasses ?: return
+        runCatching {
+            glasses.services.captouch.tapAndHold()
+            _state.update { it.copy(lastStatusMessage = "Simulated CapTouch Tap & Hold (Stop)") }
+        }
     }
 }

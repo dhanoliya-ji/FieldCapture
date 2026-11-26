@@ -134,7 +134,14 @@ class DatSessionManager(
         wantsActiveSession = true
         isUserPaused = false
         recoveryJob?.cancel()
-        if (session != null && _uiState.value.lifecycle == WalkSessionLifecycle.STREAMING) return
+        val existing = session
+        if (existing != null) {
+            if (_uiState.value.lifecycle == WalkSessionLifecycle.STREAMING) return
+            if (existing.state.value == DeviceSessionState.STARTED) {
+                scope.launch { ensurePermissionAndStartStream(existing, requestCameraPermission) }
+                return
+            }
+        }
 
         _uiState.update { it.copy(lifecycle = WalkSessionLifecycle.STARTING, lastError = null) }
 

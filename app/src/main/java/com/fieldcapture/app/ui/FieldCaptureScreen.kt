@@ -241,25 +241,39 @@ private fun WalkthroughTab(
             }
         }
 
+        val lifecycle = state.dat.lifecycle
+        val canStart = lifecycle == WalkSessionLifecycle.IDLE ||
+            lifecycle == WalkSessionLifecycle.STOPPED ||
+            lifecycle == WalkSessionLifecycle.ERROR
+        val canPauseOrResume = lifecycle == WalkSessionLifecycle.STREAMING ||
+            lifecycle == WalkSessionLifecycle.PAUSED
+        val canStop = lifecycle == WalkSessionLifecycle.STREAMING ||
+            lifecycle == WalkSessionLifecycle.PAUSED ||
+            lifecycle == WalkSessionLifecycle.STARTING ||
+            lifecycle == WalkSessionLifecycle.RECOVERING
+
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
             Button(
                 onClick = { viewModel.startWalkthroughSession(onRequestWearablePermission) },
+                enabled = canStart,
                 modifier = Modifier.weight(1f),
             ) { Text("Start") }
             OutlinedButton(
                 onClick = {
-                    if (state.dat.lifecycle == WalkSessionLifecycle.PAUSED) {
+                    if (lifecycle == WalkSessionLifecycle.PAUSED) {
                         viewModel.resumeWalkthroughSession(onRequestWearablePermission)
                     } else {
                         viewModel.pauseWalkthroughSession()
                     }
                 },
+                enabled = canPauseOrResume,
                 modifier = Modifier.weight(1f),
             ) {
-                Text(if (state.dat.lifecycle == WalkSessionLifecycle.PAUSED) "Resume" else "Pause")
+                Text(if (lifecycle == WalkSessionLifecycle.PAUSED) "Resume" else "Pause")
             }
             Button(
                 onClick = viewModel::stopWalkthroughSession,
+                enabled = canStop,
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                 modifier = Modifier.weight(1f),
             ) { Text("Stop") }

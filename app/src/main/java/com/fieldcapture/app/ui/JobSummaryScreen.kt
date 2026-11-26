@@ -72,6 +72,20 @@ fun JobSummaryScreen(
             }
         }
 
+        if (job.captures.isEmpty() && job.notes.isEmpty()) {
+            item {
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                    Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("No captures yet", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "Go to Walkthrough -> tap Start -> use Nameplate, Damage, or Note (or speak hands-free) to populate this job record and draft estimate.",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+            }
+        }
+
         if (job.lineItems.isNotEmpty()) {
             item { Text("Draft Estimate Line Items", style = MaterialTheme.typography.titleMedium) }
             items(job.lineItems, key = { it.code }) { item ->

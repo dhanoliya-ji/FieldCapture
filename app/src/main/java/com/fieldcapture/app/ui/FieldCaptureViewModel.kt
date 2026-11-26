@@ -180,13 +180,20 @@ class FieldCaptureViewModel(application: Application) : AndroidViewModel(applica
         datManager.startSession(requestWearablePerm)
     }
 
-    fun pauseWalkthroughSession() = datManager.pauseSession()
+    fun pauseWalkthroughSession() {
+        datManager.pauseSession()
+        _uiState.update { it.copy(statusBanner = "Stream paused — tap Resume to continue") }
+    }
 
     fun resumeWalkthroughSession(requestWearablePerm: suspend (Permission) -> PermissionStatus) {
+        _uiState.update { it.copy(statusBanner = "Resuming camera stream...") }
         datManager.resumeSession(requestWearablePerm)
     }
 
-    fun stopWalkthroughSession() = datManager.stopSession()
+    fun stopWalkthroughSession() {
+        datManager.stopSession()
+        _uiState.update { it.copy(statusBanner = "Session stopped. View results in Job tab.") }
+    }
 
     // MockDeviceKit controls
     fun quickStartMockGlasses() {
