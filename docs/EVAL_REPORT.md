@@ -1,24 +1,20 @@
 # FieldCapture Evaluation Report
 
-> **Honest Measurement Policy**: No real-world accuracy numbers are fabricated in this repository. All real-frame metrics must be generated from your own 40+ captured frames (10+ nameplates, 10+ low-light shots, and damage frames with tape-measure ground truth).
+> Note: All numbers in this report must come from real frames captured on-device (never synthetic or downloaded images). I built `EvaluationEngine` and the in-app **Eval** tab (`RealImageEvalRunner`) so the 40+ frame evaluation runs directly on the phone with ML Kit OCR and `ImageQualityAnalyzer`.
 
-## Evaluation Harness
-The project includes `com.fieldcapture.app.eval.EvaluationEngine`, which evaluates a labeled dataset (`List<EvalSample>`) across:
-- **On-device Quality Gate** (`ImageQualityAnalyzer`: blur, low-light, overexposure, bad framing)
-- **Nameplate Extraction** (`NameplateParser`: `make`, `model`, `serialNumber`, `manufactureDate`)
-- **Confidence Calibration** (mean confidence on correct predictions vs. incorrect predictions)
-- **Monocular Size Estimation** (`MonocularSizeEstimator`: area % error vs. tape-measure ground truth)
-- **Top 5 Worst Failures** (ranked with root-cause diagnostics)
-
-## How to Run Your 40+ Frame Evaluation
-1. Capture **≥ 40 real frames** using your phone camera or MockDeviceKit video feed:
+## How to Run the 40+ Frame Evaluation
+1. Capture **≥ 40 real frames** in your own space:
    - ≥ 10 appliance/water-heater nameplates (varied angles, distances, glare)
-   - ≥ 10 low-light shots (under-sink cupboard, dark hallway/closet, dim basement)
-   - ≥ 20 wall/ceiling/floor damage or stain shots (record tape-measure width × height in inches for at least 5)
-2. Label each frame in a test suite or pass them to `EvaluationEngine.evaluate(samples)`.
-3. Record the output below:
+   - ≥ 10 low-light shots (dark cupboard, under-sink, dim corner)
+   - ≥ 20 wall/ceiling/floor damage shots (measure 5+ with a tape measure in inches)
+2. Generate `labels.json` and push to the phone:
+   ```bash
+   python scripts/prepare_eval_labels.py <folder-of-photos>
+   adb push "<folder-of-photos>\." /sdcard/Android/data/com.fieldcapture.app/files/eval/
+   ```
+3. Open the **Eval** tab in FieldCapture and tap **Run Evaluation on Real Captures**.
 
-### Results Table (Populate After Real Capture Run)
+## Measured Results (Populate After Real Capture Run)
 | Metric | Result | Notes |
 |---|---|---|
 | Total Frames | `TBD (≥ 40)` | |
@@ -32,9 +28,9 @@ The project includes `com.fieldcapture.app.eval.EvaluationEngine`, which evaluat
 | Avg Confidence (Correct vs Wrong) | `TBD` | |
 | Mean Monocular Area Error (%) | `TBD` | |
 
-### Five Worst Failures (Populate From `EvaluationEngine` Output)
-1. **Sample:** `TBD` — **Field:** `TBD` — **Root Cause:** `TBD`
-2. **Sample:** `TBD` — **Field:** `TBD` — **Root Cause:** `TBD`
-3. **Sample:** `TBD` — **Field:** `TBD` — **Root Cause:** `TBD`
-4. **Sample:** `TBD` — **Field:** `TBD` — **Root Cause:** `TBD`
-5. **Sample:** `TBD` — **Field:** `TBD` — **Root Cause:** `TBD`
+## Five Worst Failures & Root Causes
+1. **Sample:** `TBD` — **Field:** `TBD` — **Cause:** `TBD`
+2. **Sample:** `TBD` — **Field:** `TBD` — **Cause:** `TBD`
+3. **Sample:** `TBD` — **Field:** `TBD` — **Cause:** `TBD`
+4. **Sample:** `TBD` — **Field:** `TBD` — **Cause:** `TBD`
+5. **Sample:** `TBD` — **Field:** `TBD` — **Cause:** `TBD`
