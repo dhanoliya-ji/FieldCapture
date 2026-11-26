@@ -78,10 +78,10 @@ Designing for a tech wearing gloves in a dark, offline attic:
 - **Cut mandatory cloud login / cloud-only inference**: Basements and attics have no signal. Everything runs locally and queues in SQLite until connectivity returns.
 - **Cut multi-step retake modals**: Quality failures speak a short TTS prompt so the tech keeps working hands-free, with a single **Keep Anyway** button if a retake isn't possible.
 
-## Known Limitations
+## Known Limitations & Privacy Note
+- **Privacy & Demo / Test Data**: Due to personal privacy constraints, I have not recorded or included video/photo captures of my personal living space in this repository. To run a live demo or evaluate the 40+ frame benchmark, please provide your own test video (`.mp4`) or labeled frames (`.jpg`/`.png` + `labels.json`); you can load them directly via **Mock Glasses → Pick Video Feed / Pick Mock Photo** or push them to `/sdcard/Android/data/com.fieldcapture.app/files/eval/` for the in-app **Eval** tab.
 - **Monocular size accuracy**: Without a known-size reference object in frame, `FOV_DISTANCE_PRIOR` assumes a 1.2 m standoff and 82° HFOV; steep angles or very close/far shots add proportional error.
 - **SpeechRecognizer timeouts**: Android's built-in `SpeechRecognizer` can pause between utterances in noisy spaces, so `VoiceCommandManager` auto-restarts it and provides quick-trigger buttons as a backup.
-- **Real captures required**: The 40+ frame eval set and 3 sample JSONs must be recorded in your own environment (no synthetic/internet footage).
 
 ## What I Would Do With Two More Weeks
 1. Auto-detect standard 4.5" × 2.75" electrical wall plates in damage frames to switch `MonocularSizeEstimator` from `FOV_DISTANCE_PRIOR` to `REFERENCE_SCALE` automatically.
