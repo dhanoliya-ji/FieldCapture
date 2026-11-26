@@ -54,8 +54,8 @@ flowchart LR
 
 ### 1. DAT 1.1.0 Lifecycle & Disconnect Recovery
 DAT 1.1.0 uses a two-step startup: `Wearables.createSession(AutoDeviceSelector())` followed by waiting for `DeviceSessionState.STARTED` before calling `session.addCamera(...)` and `stream.start()`.
-- **Pause/Resume** stops only the `Camera` capability while keeping `DeviceSession` connected.
-- **Disconnect Recovery** watches for unexpected `DeviceSessionState.STOPPED` / `StreamState.STOPPED` transitions while a walk-through is active, keeps the SQLite job and upload queue intact, and automatically recreates the session when `activeDeviceFlow()` sees the glasses return.
+- **Lifecycle edge cases handled**: Guards against duplicate `createSession` calls while a session is still active/stopping, stops only the `Camera` capability on **Pause** while keeping `DeviceSession` alive, tears down cleanly on **Stop**, and automatically recovers when `DeviceSessionState.STOPPED` or `StreamState.STOPPED` fires mid-walkthrough without losing any SQLite-queued captures.
+- **What `MockDeviceKit` simulates vs. real glasses**: `MockDeviceKit` simulates pairing, power (`powerOn`/`powerOff`), hinge (`fold`/`unfold`), wear (`don`/`doff`), cap-touch, and phone camera/video feeds. It **cannot** simulate Bluetooth HFP/SCO audio routing, temple thermal/battery throttling during 24fps streaming, gradual RF packet loss behind ductwork, fixed-focus close-up blur (`< 15 cm`), or production Meta AI app attestation. See [Research Memo](docs/RESEARCH_MEMO.md) for the full comparison.
 
 ### 2. Why Audio Falls Back to the Phone Mic in MockDeviceKit
 DAT 1.1.0 exposes `Camera` and `Display` capabilities—there is no DAT audio stream API. On real Meta glasses, mic audio arrives over standard Android Bluetooth HFP/SCO (`AudioDeviceInfo.TYPE_BLUETOOTH_SCO`). Because `MockDeviceKit` does not register a virtual SCO input in `AudioManager`, `AudioRouteDetector` checks for a BT SCO/BLE headset and falls back to the phone mic when none is present, logging the reason into `JobRecord.sessionTelemetry`.
