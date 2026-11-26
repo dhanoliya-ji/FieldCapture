@@ -78,6 +78,11 @@ Designing for a tech wearing gloves in a dark, offline attic:
 - **Cut mandatory cloud login / cloud-only inference**: Basements and attics have no signal. Everything runs locally and queues in SQLite until connectivity returns.
 - **Cut multi-step retake modals**: Quality failures speak a short TTS prompt so the tech keeps working hands-free, with a single **Keep Anyway** button if a retake isn't possible.
 
+## Assumptions
+- **Camera intrinsics prior**: Without a depth sensor or reference object, `MonocularSizeEstimator` assumes an 82° horizontal FoV and ~1.2 m (47.2 in) inspection standoff distance.
+- **Estimate pricing & language**: Unit rates in `LineItemCatalog` represent illustrative US residential restoration rates in USD; voice commands assume English speech input.
+- **Developer Mode credentials**: `mwdat_application_id=0` and `mwdat_client_token=0` assume Meta AI Developer Mode / MockDeviceKit testing without production app attestation.
+
 ## Known Limitations & Privacy Note
 - **Privacy & Demo / Test Data**: Due to personal privacy constraints, I have not recorded or included video/photo captures of my personal living space in this repository. To run a live demo or evaluate the 40+ frame benchmark, please provide your own test video (`.mp4`) or labeled frames (`.jpg`/`.png` + `labels.json`); you can load them directly via **Mock Glasses → Pick Video Feed / Pick Mock Photo** or push them to `/sdcard/Android/data/com.fieldcapture.app/files/eval/` for the in-app **Eval** tab.
 - **Monocular size accuracy**: Without a known-size reference object in frame, `FOV_DISTANCE_PRIOR` assumes a 1.2 m standoff and 82° HFOV; steep angles or very close/far shots add proportional error.
